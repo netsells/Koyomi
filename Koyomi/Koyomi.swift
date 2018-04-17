@@ -72,6 +72,8 @@ import UIKit
      */
     @objc optional func koyomi(_ koyomi: Koyomi, fontForItemAt indexPath: IndexPath, date: Date) -> UIFont?
     
+    @objc optional func koyomi(_ koyomi: Koyomi, backgroundColorForItemAt indexPath: IndexPath, date: Date) -> UIColor?
+    
 }
 
 // MARK: - KoyomiStyle -
@@ -266,6 +268,7 @@ final public class Koyomi: UICollectionView {
     @IBInspectable public var weekColor: UIColor    = UIColor.KoyomiColor.black
     @IBInspectable public var weekdayColor: UIColor = UIColor.KoyomiColor.black
     @IBInspectable public var otherMonthColor: UIColor = UIColor.KoyomiColor.lightGray
+    @IBInspectable public var otherMonthBackgroundColor: UIColor = UIColor.KoyomiColor.lightGray
     @IBInspectable public var dayBackgrondColor: UIColor  = .white
     @IBInspectable public var weekBackgrondColor: UIColor = .white
     public var holidayColor: (saturday: UIColor, sunday: UIColor) = (UIColor.KoyomiColor.blue, UIColor.KoyomiColor.red)
@@ -501,7 +504,14 @@ private extension Koyomi {
                 }
             }()
             
-            backgroundColor = model.isHighlighted(with: indexPath) ? highlightedDayBackgrondColor : dayBackgrondColor
+            if let beginning = model.indexAtBeginning(in: .current), indexPath.row < beginning {
+                backgroundColor = otherMonthBackgroundColor
+            } else if let end = model.indexAtEnd(in: .current), indexPath.row > end {
+                backgroundColor = otherMonthBackgroundColor
+            } else {
+                backgroundColor = calendarDelegate?.koyomi?(self, backgroundColorForItemAt: indexPath, date: date) ?? (model.isHighlighted(with: indexPath) ? highlightedDayBackgrondColor : dayBackgrondColor)
+            }
+            
             font    = calendarDelegate?.koyomi?(self, fontForItemAt: indexPath, date: date) ?? dayLabelFont
             content = model.dayString(at: indexPath, isHiddenOtherMonth: isHiddenOtherMonth)
             postion = dayPosition
